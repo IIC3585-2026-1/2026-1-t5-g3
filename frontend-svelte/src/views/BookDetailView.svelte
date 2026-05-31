@@ -240,29 +240,6 @@
     max-width: 900px;
   }
 
-  .back-btn {
-    margin-bottom: 1rem;
-    padding: 0.4rem 0.75rem;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: var(--surface);
-    color: var(--text);
-    cursor: pointer;
-    font-size: 0.9rem;
-  }
-
-  .back-btn:hover {
-    border-color: var(--primary);
-  }
-
-  .status {
-    color: var(--muted);
-  }
-
-  .status.error {
-    color: #b42318;
-  }
-
   .book-detail {
     background: var(--surface);
     border: 1px solid var(--border);

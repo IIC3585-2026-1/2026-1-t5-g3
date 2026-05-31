@@ -14,6 +14,7 @@
   } from '../stores/social'
   import { isAuthenticated, user } from '../stores/auth'
   import { goBack } from '../utils/router'
+  import { getErrorMessage } from '../utils/error'
 
   interface Props {
     params?: { id?: string }
@@ -76,8 +77,7 @@
       message = ''
       await loadUserProfile(userId)
     } catch (error) {
-      formError =
-        error instanceof Error ? error.message : 'No se pudo recomendar el libro'
+      formError = getErrorMessage(error, 'No se pudo recomendar el libro')
     } finally {
       formLoading = false
     }
@@ -89,9 +89,7 @@
       await loadUserProfile(userId)
     } catch (error) {
       profileError.set(
-        error instanceof Error
-          ? error.message
-          : 'No se pudo quitar la recomendación',
+        getErrorMessage(error, 'No se pudo quitar la recomendación'),
       )
     }
   }
@@ -249,15 +247,6 @@
     max-width: 720px;
   }
 
-  .back-btn {
-    margin-bottom: 1rem;
-    padding: 0.4rem 0.75rem;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: var(--surface);
-    cursor: pointer;
-  }
-
   .profile-header {
     display: flex;
     justify-content: space-between;
@@ -283,29 +272,7 @@
   }
 
   .stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.75rem;
     margin-bottom: 1.5rem;
-  }
-
-  .stat-card {
-    padding: 1rem;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--surface);
-    text-align: center;
-  }
-
-  .stat-value {
-    display: block;
-    font-size: 1.75rem;
-    font-weight: 700;
-  }
-
-  .stat-label {
-    color: var(--muted);
-    font-size: 0.85rem;
   }
 
   .profile-section {
@@ -393,43 +360,13 @@
     flex-shrink: 0;
   }
 
-  .btn-primary,
   .btn-outline {
     padding: 0.45rem 0.85rem;
     border-radius: 6px;
     font-size: 0.875rem;
     cursor: pointer;
-  }
-
-  .btn-primary {
-    border: 1px solid var(--primary);
-    background: var(--primary);
-    color: white;
-  }
-
-  .btn-outline {
     border: 1px solid var(--border);
     background: var(--surface);
     color: var(--text);
-  }
-
-  .status {
-    color: var(--muted);
-  }
-
-  .status.error,
-  .error {
-    color: #b42318;
-  }
-
-  .empty {
-    color: var(--muted);
-    margin: 0;
-  }
-
-  @media (max-width: 640px) {
-    .stats {
-      grid-template-columns: 1fr;
-    }
   }
 </style>

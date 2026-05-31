@@ -11,34 +11,39 @@
   import { searchBooks } from '../services/googleBooks'
   import type { Book } from '../types/book'
   import { calculateReadingProgress } from '../types/book'
+  import { debounce } from '../utils/debounce'
+  import { getErrorMessage } from '../utils/error'
 
   let query = $state('')
   let results = $state<Book[]>([])
   let loading = $state(false)
   let errorMessage = $state('')
   let actionError = $state<string | null>(null)
-  let debounceTimer: ReturnType<typeof setTimeout> | undefined
+
+  async function runSearch(searchQuery: string) {
+    if (!searchQuery.trim()) {
+      results = []
+      errorMessage = ''
+      return
+    }
+
+    loading = true
+    errorMessage = ''
+    results = await searchBooks(searchQuery)
+    loading = false
+
+    if (results.length === 0) {
+      errorMessage = 'No se encontraron libros.'
+    }
+  }
+
+  const debouncedSearch = debounce((searchQuery: string) => {
+    void runSearch(searchQuery)
+  }, 300)
 
   function handleInput(event: Event) {
     query = (event.target as HTMLInputElement).value
-    clearTimeout(debounceTimer)
-
-    debounceTimer = setTimeout(async () => {
-      if (!query.trim()) {
-        results = []
-        errorMessage = ''
-        return
-      }
-
-      loading = true
-      errorMessage = ''
-      results = await searchBooks(query)
-      loading = false
-
-      if (results.length === 0) {
-        errorMessage = 'No se encontraron libros.'
-      }
-    }, 300)
+    debouncedSearch(query)
   }
 
   async function handleAdd(book: Book) {
@@ -62,8 +67,7 @@
     try {
       await addBook($activeTab, book)
     } catch (error) {
-      actionError =
-        error instanceof Error ? error.message : 'No se pudo agregar el libro'
+      actionError = getErrorMessage(error, 'No se pudo agregar el libro')
     }
   }
 
@@ -159,23 +163,8 @@
     font-size: 0.9rem;
   }
 
-  .inline-link {
-    padding: 0;
-    border: none;
-    background: none;
-    color: var(--primary);
-    cursor: pointer;
-    font-size: inherit;
-    text-decoration: underline;
-  }
-
   .status {
-    margin: 0.75rem 0 0;
-    color: var(--muted);
-  }
-
-  .status.error {
-    color: #b42318;
+    margin-top: 0.75rem;
   }
 
   .results {

@@ -1,4 +1,5 @@
-import type { Book, BookStatus, DashboardData } from '../types/book'
+import type { Book, BookStatus } from '../types/book'
+import type { ApiBook } from '../types/apiBook'
 import { deriveCurrentPage } from '../types/book'
 import { resolveCoverUrl } from '../utils/bookCover'
 import { apiFetch } from './api'
@@ -9,27 +10,10 @@ interface UserBookApiResponse {
   readAt: string | null
   readingProgress: number
   currentPage: number
-  book: {
-    id: string
-    externalApiId: string
-    title: string
-    authors: string[]
-    thumbnailUrl?: string
-    description?: string
-    pageCount?: number
-  }
+  book: ApiBook
 }
 
-interface DashboardApiResponse {
-  readThisYear: number
-  pending: number
-  reading: number
-  readThisYearBooks: UserBookApiResponse[]
-  pendingBooks: UserBookApiResponse[]
-  readingBooks: UserBookApiResponse[]
-}
-
-function mapUserBook(item: UserBookApiResponse): Book {
+export function mapUserBook(item: UserBookApiResponse): Book {
   const pageCount = item.book.pageCount
   const currentPage =
     item.currentPage || deriveCurrentPage(item.readingProgress, pageCount)
@@ -48,23 +32,8 @@ function mapUserBook(item: UserBookApiResponse): Book {
   }
 }
 
-function mapDashboard(data: DashboardApiResponse): DashboardData {
-  return {
-    readThisYear: data.readThisYear,
-    pending: data.pending,
-    reading: data.reading,
-    readThisYearBooks: data.readThisYearBooks.map(mapUserBook),
-    pendingBooks: data.pendingBooks.map(mapUserBook),
-    readingBooks: data.readingBooks.map(mapUserBook),
-  }
-}
-
 export function fetchMyBooks(): Promise<UserBookApiResponse[]> {
   return apiFetch<UserBookApiResponse[]>('/user-books/me')
-}
-
-export function fetchDashboard(): Promise<DashboardData> {
-  return apiFetch<DashboardApiResponse>('/user-books/dashboard').then(mapDashboard)
 }
 
 export function addUserBook(
@@ -112,4 +81,3 @@ export function removeUserBook(userBookId: string): Promise<void> {
   })
 }
 
-export { mapUserBook }

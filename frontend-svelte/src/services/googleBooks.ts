@@ -107,7 +107,6 @@ function mapVolumeToDetail(volume: GoogleVolume): BookDetail {
     ratingsCount: info.ratingsCount,
     previewLink: info.previewLink,
     infoLink: info.infoLink,
-    canonicalLink: info.canonicalVolumeLink,
     maturityRating: info.maturityRating,
     isbn10,
     isbn13,

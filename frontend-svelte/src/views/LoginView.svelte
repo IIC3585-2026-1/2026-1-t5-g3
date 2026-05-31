@@ -1,16 +1,9 @@
 <script lang="ts">
-  import { onMount } from 'svelte'
   import { push } from 'svelte-spa-router'
-  import { authError, authLoading, isAuthenticated, login } from '../stores/auth'
+  import { authError, authLoading, login } from '../stores/auth'
 
   let email = $state('')
   let password = $state('')
-
-  onMount(() => {
-    if ($isAuthenticated) {
-      push('/')
-    }
-  })
 
   async function handleSubmit(event: Event) {
     event.preventDefault()

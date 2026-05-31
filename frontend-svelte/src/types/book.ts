@@ -19,7 +19,6 @@ export interface Book {
 export interface BookDetail extends Book {
   subtitle?: string
   publisher?: string
-  pageCount?: number
   printedPageCount?: number
   categories?: string[]
   language?: string
@@ -27,7 +26,6 @@ export interface BookDetail extends Book {
   ratingsCount?: number
   previewLink?: string
   infoLink?: string
-  canonicalLink?: string
   isbn10?: string
   isbn13?: string
   coverUrl?: string

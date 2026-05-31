@@ -1,9 +1,9 @@
 import type {
   CreateRecommendationPayload,
   ProfileRecommendation,
-  UpdateRecommendationPayload,
 } from '../types/social'
-import { resolveCoverUrl } from '../utils/bookCover'
+import type { ApiBook } from '../types/apiBook'
+import { mapApiBookCover } from '../types/apiBook'
 import { apiFetch } from './api'
 
 interface RecommendationApiResponse {
@@ -15,15 +15,7 @@ interface RecommendationApiResponse {
     id: string
     name: string
   }
-  book: {
-    id: string
-    externalApiId: string
-    title: string
-    authors: string[]
-    thumbnailUrl?: string
-    description?: string
-    pageCount?: number
-  }
+  book: ApiBook
 }
 
 function mapRecommendation(
@@ -35,13 +27,7 @@ function mapRecommendation(
     message: item.message,
     createdAt: item.createdAt,
     user: item.user,
-    book: {
-      ...item.book,
-      thumbnailUrl: resolveCoverUrl(
-        item.book.externalApiId,
-        item.book.thumbnailUrl,
-      ),
-    },
+    book: mapApiBookCover(item.book),
   }
 }
 
@@ -60,18 +46,6 @@ export function createRecommendation(
   }).then(mapRecommendation)
 }
 
-export function updateRecommendation(
-  id: string,
-  payload: UpdateRecommendationPayload,
-): Promise<ProfileRecommendation> {
-  return apiFetch<RecommendationApiResponse>(`/recommendations/${id}`, {
-    method: 'PATCH',
-    body: JSON.stringify(payload),
-  }).then(mapRecommendation)
-}
-
 export function removeRecommendation(id: string): Promise<void> {
   return apiFetch<void>(`/recommendations/${id}`, { method: 'DELETE' })
 }
-
-export { mapRecommendation }

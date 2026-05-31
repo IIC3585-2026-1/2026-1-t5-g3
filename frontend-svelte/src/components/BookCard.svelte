@@ -1,5 +1,5 @@
 <script lang="ts">
-  import BookCover from './BookCover.svelte'
+  import BookSummaryRow from './BookSummaryRow.svelte'
   import BookStatusBadge from './BookStatusBadge.svelte'
   import { push } from 'svelte-spa-router'
   import type { Book, BookStatus } from '../types/book'
@@ -15,7 +15,6 @@
     onTertiaryAction?: () => void
     showProgress?: boolean
     onPageChange?: (currentPage: number) => void
-    linkToDetail?: boolean
     userStatus?: BookStatus | null
     statusProgress?: number
   }
@@ -30,14 +29,13 @@
     onTertiaryAction,
     showProgress = false,
     onPageChange,
-    linkToDetail = true,
     userStatus,
     statusProgress,
   }: Props = $props()
 
   const publishedYear = $derived(formatPublishedYear(book.publishedDate))
 
-  let draftPage = $state(book.currentPage ?? 0)
+  let draftPage = $state(0)
 
   $effect(() => {
     draftPage = book.currentPage ?? 0
@@ -65,41 +63,17 @@
   }
 
   function openDetail() {
-    if (linkToDetail) push(`/book/${book.id}`)
+    push(`/book/${book.id}`)
   }
 </script>
 
 <article class="book-card">
-  {#if linkToDetail}
-    <button type="button" class="cover-link" onclick={openDetail}>
-      <BookCover
-        volumeId={book.id}
-        src={book.thumbnail}
-        alt="Portada de {book.title}"
-        imgClass="cover"
-        placeholderClass="cover placeholder"
-      />
-    </button>
-  {:else}
-    <BookCover
-      volumeId={book.id}
-      src={book.thumbnail}
-      alt="Portada de {book.title}"
-      imgClass="cover"
-      placeholderClass="cover placeholder"
-    />
-  {/if}
-
-  <div class="info">
-    {#if linkToDetail}
-      <button type="button" class="title-link" onclick={openDetail}>
-        <h3>{book.title}</h3>
-      </button>
-    {:else}
-      <h3>{book.title}</h3>
-    {/if}
-
-    <p>{book.authors.join(', ')}</p>
+  <BookSummaryRow
+    volumeId={book.id}
+    thumbnail={book.thumbnail}
+    title={book.title}
+    authors={book.authors.join(', ')}
+  >
     {#if publishedYear}
       <p class="year">{publishedYear}</p>
     {/if}
@@ -140,7 +114,7 @@
         {:else}
           <p class="progress-warning">
             Sin total de páginas.
-            <button type="button" class="text-link" onclick={openDetail}>
+            <button type="button" class="inline-link" onclick={openDetail}>
               Ver detalle
             </button>
             para intentar cargarlo.
@@ -162,85 +136,25 @@
         </button>
       {/if}
     </div>
-  </div>
+  </BookSummaryRow>
 </article>
 
 <style>
   .book-card {
-    display: flex;
-    gap: 0.75rem;
     padding: 0.75rem;
     border: 1px solid var(--border);
     border-radius: 8px;
     background: var(--surface);
   }
 
-  .book-card :global(.cover) {
-    width: 64px;
-    height: 96px;
-    object-fit: cover;
-    border-radius: 4px;
-    flex-shrink: 0;
-  }
-
-  .cover-link {
-    flex-shrink: 0;
-    display: block;
-    padding: 0;
-    border: none;
-    background: none;
-    cursor: pointer;
-  }
-
-  .title-link {
-    padding: 0;
-    border: none;
-    background: none;
-    cursor: pointer;
-    text-align: left;
-    color: inherit;
-    width: 100%;
-  }
-
-  .title-link:hover h3 {
-    color: var(--primary);
-  }
-
   .year {
+    margin: 0 0 0.5rem;
+    color: var(--muted);
     font-size: 0.8rem;
   }
 
   .status-tag {
     margin-bottom: 0.5rem;
-  }
-
-  .book-card :global(.placeholder) {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 64px;
-    height: 96px;
-    font-size: 0.75rem;
-    color: var(--muted);
-    background: var(--bg);
-    text-align: center;
-    border-radius: 4px;
-  }
-
-  .info {
-    flex: 1;
-    min-width: 0;
-  }
-
-  h3 {
-    margin: 0 0 0.25rem;
-    font-size: 1rem;
-  }
-
-  p {
-    margin: 0 0 0.5rem;
-    color: var(--muted);
-    font-size: 0.875rem;
   }
 
   .progress-block {
@@ -293,16 +207,6 @@
     margin: 0;
     font-size: 0.875rem;
     color: var(--muted);
-  }
-
-  .text-link {
-    padding: 0;
-    border: none;
-    background: none;
-    color: var(--primary);
-    cursor: pointer;
-    font-size: inherit;
-    text-decoration: underline;
   }
 
   .actions {

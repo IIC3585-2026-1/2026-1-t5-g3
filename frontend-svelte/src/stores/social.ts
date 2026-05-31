@@ -3,6 +3,7 @@ import type { ProfileRecommendation, UserProfile } from '../types/social'
 import * as followsService from '../services/follows'
 import * as recommendationsService from '../services/recommendations'
 import * as usersService from '../services/users'
+import { getErrorMessage } from '../utils/error'
 import { isAuthenticated } from './auth'
 
 export const profile = writable<UserProfile | null>(null)
@@ -20,9 +21,7 @@ export async function loadUserProfile(userId: string): Promise<void> {
   try {
     profile.set(await usersService.fetchUserProfile(userId))
   } catch (error) {
-    profileError.set(
-      error instanceof Error ? error.message : 'Error al cargar el perfil',
-    )
+    profileError.set(getErrorMessage(error, 'Error al cargar el perfil'))
     profile.set(null)
   } finally {
     profileLoading.set(false)
@@ -60,9 +59,7 @@ export async function loadFriendsRecommendations(): Promise<void> {
     )
   } catch (error) {
     friendsRecommendationsError.set(
-      error instanceof Error
-        ? error.message
-        : 'Error al cargar recomendaciones de amigos',
+      getErrorMessage(error, 'Error al cargar recomendaciones de amigos'),
     )
     friendsRecommendations.set([])
   } finally {

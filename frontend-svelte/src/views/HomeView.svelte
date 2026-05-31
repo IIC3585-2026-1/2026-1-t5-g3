@@ -116,10 +116,4 @@
   .btn-secondary:hover {
     border-color: var(--primary);
   }
-
-  .btn-primary-link {
-    border: 1px solid var(--primary);
-    background: var(--primary);
-    color: white;
-  }
 </style>

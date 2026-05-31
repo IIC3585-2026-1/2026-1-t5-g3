@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { push } from 'svelte-spa-router'
   import BookCard from './BookCard.svelte'
+  import GuestPrompt from './GuestPrompt.svelte'
   import {
     activeList,
     activeTab,
@@ -37,20 +37,9 @@
   {#if $booksLoading}
     <p class="empty">Cargando tus libros...</p>
   {:else if !$isAuthenticated}
-    <div class="guest-panel">
-      <p>
-        Inicia sesión para guardar libros, marcarlos como leídos y ver tu
-        dashboard.
-      </p>
-      <div class="guest-actions">
-        <button type="button" class="btn-primary-link" onclick={() => push('/login')}>
-          Iniciar sesión
-        </button>
-        <button type="button" class="btn-outline-link" onclick={() => push('/register')}>
-          Registrarse
-        </button>
-      </div>
-    </div>
+    <GuestPrompt
+      message="Inicia sesión para guardar libros, marcarlos como leídos y ver tu dashboard."
+    />
   {:else if $booksError}
     <p class="error">{$booksError}</p>
   {:else if $activeList.length === 0}
@@ -102,54 +91,6 @@
   .book-list h2 {
     margin: 0 0 1rem;
     font-size: 1.125rem;
-  }
-
-  .empty {
-    color: var(--muted);
-    margin: 0;
-  }
-
-  .error {
-    color: #b42318;
-    margin: 0;
-  }
-
-  .guest-panel {
-    padding: 1rem;
-    border: 1px dashed var(--border);
-    border-radius: 8px;
-    background: var(--bg);
-  }
-
-  .guest-panel p {
-    margin: 0 0 1rem;
-    color: var(--muted);
-  }
-
-  .guest-actions {
-    display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-  }
-
-  .btn-primary-link,
-  .btn-outline-link {
-    padding: 0.5rem 0.85rem;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    cursor: pointer;
-  }
-
-  .btn-primary-link {
-    border: none;
-    background: var(--primary);
-    color: white;
-  }
-
-  .btn-outline-link {
-    border: 1px solid var(--border);
-    color: var(--text);
-    background: var(--surface);
   }
 
   .items {

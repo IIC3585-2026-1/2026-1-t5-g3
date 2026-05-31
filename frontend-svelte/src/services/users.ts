@@ -9,7 +9,3 @@ export function searchUsers(query: string): Promise<UserSummary[]> {
 export function fetchUserProfile(userId: string): Promise<UserProfile> {
   return apiFetch<UserProfile>(`/users/${userId}/profile`)
 }
-
-export function fetchUserFriends(userId: string): Promise<UserSummary[]> {
-  return apiFetch<UserSummary[]>(`/users/${userId}/friends`)
-}

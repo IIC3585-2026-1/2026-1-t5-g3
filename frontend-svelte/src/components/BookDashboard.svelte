@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { push } from 'svelte-spa-router'
   import BookCard from './BookCard.svelte'
+  import GuestPrompt from './GuestPrompt.svelte'
   import { dashboard, booksError, booksLoading, setActiveTab } from '../stores/books'
   import { isAuthenticated } from '../stores/auth'
 
@@ -13,12 +13,10 @@
   {#if $booksLoading}
     <p class="empty">Cargando estadísticas...</p>
   {:else if !$isAuthenticated}
-    <div class="guest-panel">
-      <p>Inicia sesión para ver tu progreso de lectura del año.</p>
-      <button type="button" class="btn-primary-link" onclick={() => push('/login')}>
-        Iniciar sesión
-      </button>
-    </div>
+    <GuestPrompt
+      message="Inicia sesión para ver tu progreso de lectura del año."
+      showRegister={false}
+    />
   {:else if $booksError}
     <p class="error">{$booksError}</p>
   {:else if $dashboard}
@@ -97,30 +95,12 @@
   }
 
   .stats {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
     margin-bottom: 1.5rem;
   }
 
-  .stat-card {
-    padding: 1rem;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    background: var(--bg);
-    text-align: center;
-  }
-
   .stat-value {
-    display: block;
-    font-size: 2rem;
-    font-weight: 700;
     color: var(--primary);
-  }
-
-  .stat-label {
-    color: var(--muted);
-    font-size: 0.9rem;
+    font-size: 2rem;
   }
 
   .dashboard-section {
@@ -132,47 +112,9 @@
     font-size: 1rem;
   }
 
-  .empty {
-    color: var(--muted);
-    margin: 0;
-  }
-
-  .error {
-    color: #b42318;
-    margin: 0;
-  }
-
-  .guest-panel {
-    padding: 1rem;
-    border: 1px dashed var(--border);
-    border-radius: 8px;
-    background: var(--bg);
-  }
-
-  .guest-panel p {
-    margin: 0 0 1rem;
-    color: var(--muted);
-  }
-
-  .btn-primary-link {
-    padding: 0.5rem 0.85rem;
-    border: none;
-    border-radius: 6px;
-    background: var(--primary);
-    color: white;
-    cursor: pointer;
-    font-size: 0.9rem;
-  }
-
   .items {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-  }
-
-  @media (max-width: 640px) {
-    .stats {
-      grid-template-columns: 1fr;
-    }
   }
 </style>

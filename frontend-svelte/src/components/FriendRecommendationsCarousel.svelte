@@ -1,22 +1,17 @@
 <script lang="ts">
-  import { onMount } from 'svelte'
   import BookCover from './BookCover.svelte'
   import {
     friendsRecommendations,
     friendsRecommendationsError,
     friendsRecommendationsLoading,
-    loadFriendsRecommendations,
   } from '../stores/social'
   import { push } from 'svelte-spa-router'
+  import { formatStars } from '../utils/stars'
 
   let currentIndex = $state(0)
 
   const current = $derived($friendsRecommendations[currentIndex] ?? null)
   const hasItems = $derived($friendsRecommendations.length > 0)
-
-  onMount(() => {
-    void loadFriendsRecommendations()
-  })
 
   function prev() {
     if (!hasItems) return
@@ -28,10 +23,6 @@
   function next() {
     if (!hasItems) return
     currentIndex = (currentIndex + 1) % $friendsRecommendations.length
-  }
-
-  function stars(rating: number): string {
-    return '★'.repeat(rating)
   }
 </script>
 
@@ -72,7 +63,7 @@
         />
 
         <p class="slide-title">{current.book.title}</p>
-        <p class="slide-rating">{stars(current.rating)}</p>
+        <p class="slide-rating">{formatStars(current.rating)}</p>
       </button>
       <p class="slide-user">
         <button
@@ -101,17 +92,6 @@
     color: var(--muted);
     text-transform: uppercase;
     letter-spacing: 0.04em;
-  }
-
-  .status {
-    margin: 0;
-    font-size: 0.8rem;
-    color: var(--muted);
-    line-height: 1.4;
-  }
-
-  .status.error {
-    color: #b42318;
   }
 
   .carousel-controls {
@@ -199,15 +179,5 @@
   .slide-user {
     margin: 0.25rem 0 0;
     font-size: 0.75rem;
-  }
-
-  .inline-link {
-    padding: 0;
-    border: none;
-    background: none;
-    color: var(--primary);
-    cursor: pointer;
-    font-size: inherit;
-    text-decoration: underline;
   }
 </style>

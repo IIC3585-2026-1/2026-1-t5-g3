@@ -1,6 +1,7 @@
 import { derived, get, writable } from 'svelte/store'
 import type { Book, BookStatus, DashboardData, ListType } from '../types/book'
 import { listTypeToStatus, resolveUserBookStatus } from '../types/book'
+import { getErrorMessage } from '../utils/error'
 import { isAuthenticated } from './auth'
 import * as userBooksService from '../services/userBooks'
 
@@ -45,7 +46,7 @@ export function clearBooks(): void {
 
 function populateLists(
   items: Awaited<ReturnType<typeof userBooksService.fetchMyBooks>>,
-): void {
+): Record<Exclude<ListType, 'dashboard'>, Book[]> {
   const nextLists: Record<Exclude<ListType, 'dashboard'>, Book[]> = {
     read: [],
     wantToRead: [],
@@ -63,7 +64,25 @@ function populateLists(
     }
   }
 
-  lists.set(nextLists)
+  return nextLists
+}
+
+function deriveDashboard(
+  nextLists: Record<Exclude<ListType, 'dashboard'>, Book[]>,
+): DashboardData {
+  const currentYear = String(new Date().getFullYear())
+  const readThisYearBooks = nextLists.read.filter(
+    (book) => book.readAt?.startsWith(currentYear),
+  )
+
+  return {
+    readThisYear: readThisYearBooks.length,
+    pending: nextLists.wantToRead.length,
+    reading: nextLists.reading.length,
+    readThisYearBooks,
+    pendingBooks: nextLists.wantToRead,
+    readingBooks: nextLists.reading,
+  }
 }
 
 export async function loadUserBooks(): Promise<void> {
@@ -73,17 +92,12 @@ export async function loadUserBooks(): Promise<void> {
   booksError.set(null)
 
   try {
-    const [items, dashboardData] = await Promise.all([
-      userBooksService.fetchMyBooks(),
-      userBooksService.fetchDashboard(),
-    ])
-
-    populateLists(items)
-    dashboard.set(dashboardData)
+    const items = await userBooksService.fetchMyBooks()
+    const nextLists = populateLists(items)
+    lists.set(nextLists)
+    dashboard.set(deriveDashboard(nextLists))
   } catch (error) {
-    booksError.set(
-      error instanceof Error ? error.message : 'Error al cargar tus libros',
-    )
+    booksError.set(getErrorMessage(error, 'Error al cargar tus libros'))
   } finally {
     booksLoading.set(false)
   }
@@ -188,9 +202,7 @@ export async function removeBook(
     })
     await loadUserBooks()
   } catch (error) {
-    booksError.set(
-      error instanceof Error ? error.message : 'No se pudo quitar el libro',
-    )
+    booksError.set(getErrorMessage(error, 'No se pudo quitar el libro'))
     throw error
   }
 }

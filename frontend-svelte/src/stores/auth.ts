@@ -1,6 +1,8 @@
 import { derived, writable } from 'svelte/store'
 import type { User } from '../types/user'
+import type { AuthResponse } from '../types/user'
 import * as authService from '../services/auth'
+import { getErrorMessage } from '../utils/error'
 import { clearBooks, loadUserBooks } from './books'
 import { clearSocial, loadFriendsRecommendations } from './social'
 
@@ -32,6 +34,26 @@ async function loadAuthenticatedData(): Promise<void> {
   await loadFriendsRecommendations()
 }
 
+async function authenticate(
+  authFn: () => Promise<AuthResponse>,
+  fallbackError: string,
+): Promise<void> {
+  authLoading.set(true)
+  authError.set(null)
+
+  try {
+    const response = await authFn()
+    persistAuth(response.accessToken, response.user)
+    await validateSession()
+    await loadAuthenticatedData()
+  } catch (error) {
+    authError.set(getErrorMessage(error, fallbackError))
+    throw error
+  } finally {
+    authLoading.set(false)
+  }
+}
+
 export async function initAuth(): Promise<void> {
   const storedToken = localStorage.getItem(TOKEN_KEY)
   const storedUser = localStorage.getItem(USER_KEY)
@@ -52,22 +74,10 @@ export async function initAuth(): Promise<void> {
 }
 
 export async function login(email: string, password: string): Promise<void> {
-  authLoading.set(true)
-  authError.set(null)
-
-  try {
-    const response = await authService.login({ email, password })
-    persistAuth(response.accessToken, response.user)
-    await validateSession()
-    await loadAuthenticatedData()
-  } catch (error) {
-    authError.set(
-      error instanceof Error ? error.message : 'Error al iniciar sesión',
-    )
-    throw error
-  } finally {
-    authLoading.set(false)
-  }
+  return authenticate(
+    () => authService.login({ email, password }),
+    'Error al iniciar sesión',
+  )
 }
 
 export async function register(
@@ -75,22 +85,10 @@ export async function register(
   email: string,
   password: string,
 ): Promise<void> {
-  authLoading.set(true)
-  authError.set(null)
-
-  try {
-    const response = await authService.register({ name, email, password })
-    persistAuth(response.accessToken, response.user)
-    await validateSession()
-    await loadAuthenticatedData()
-  } catch (error) {
-    authError.set(
-      error instanceof Error ? error.message : 'Error al registrarse',
-    )
-    throw error
-  } finally {
-    authLoading.set(false)
-  }
+  return authenticate(
+    () => authService.register({ name, email, password }),
+    'Error al registrarse',
+  )
 }
 
 export function logout(): void {

@@ -5,6 +5,7 @@
   --muted: #78716c;
   --border: #d6d3d1;
   --primary: #2563eb;
+  --error: #b42318;
 }
 
 *,
@@ -139,23 +140,126 @@ header p {
 
 .error {
   margin: 0;
-  color: #b42318;
+  color: var(--error);
   font-size: 0.9rem;
+}
+
+.status {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.status.error {
+  color: var(--error);
+}
+
+.empty {
+  color: var(--muted);
+  margin: 0;
+}
+
+.inline-link,
+.text-link {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--primary);
+  cursor: pointer;
+  font-size: inherit;
+  text-decoration: underline;
+}
+
+.back-btn {
+  margin-bottom: 1rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+
+.back-btn:hover {
+  border-color: var(--primary);
+}
+
+.guest-panel {
+  padding: 1rem;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+}
+
+.guest-panel p {
+  margin: 0 0 1rem;
+  color: var(--muted);
+}
+
+.guest-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.btn-primary-link,
+.btn-outline-link {
+  padding: 0.5rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.btn-primary-link {
+  border: 1px solid var(--primary);
+  background: var(--primary);
+  color: white;
+}
+
+.btn-outline-link {
+  border: 1px solid var(--border);
+  color: var(--text);
+  background: var(--surface);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+.stat-card {
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  text-align: center;
+}
+
+.stat-value {
+  display: block;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.stat-label {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 640px) {
+  .stats {
+    grid-template-columns: 1fr;
+  }
 }
 
 .auth-footer {
   margin: 1.25rem 0 0;
   color: var(--muted);
   font-size: 0.95rem;
-}
-
-.auth-footer a {
-  color: var(--primary);
-  text-decoration: none;
-}
-
-.auth-footer a:hover {
-  text-decoration: underline;
 }
 
 .link-button {

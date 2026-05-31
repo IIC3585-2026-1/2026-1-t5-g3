@@ -4,6 +4,8 @@
   import { searchUsers } from '../services/users'
   import { isAuthenticated } from '../stores/auth'
   import type { UserSummary } from '../types/social'
+  import { debounce } from '../utils/debounce'
+  import { getErrorMessage } from '../utils/error'
 
   let query = $state('')
   let results = $state<UserSummary[]>([])
@@ -11,41 +13,43 @@
   let errorMessage = $state('')
   let actionError = $state<string | null>(null)
   let followState = $state<Record<string, 'idle' | 'loading'>>({})
-  let debounceTimer: ReturnType<typeof setTimeout> | undefined
+
+  async function runSearch(searchQuery: string) {
+    if (!searchQuery.trim()) {
+      results = []
+      errorMessage = ''
+      return
+    }
+
+    if (!$isAuthenticated) {
+      push('/login')
+      return
+    }
+
+    loading = true
+    errorMessage = ''
+    actionError = null
+
+    try {
+      results = await searchUsers(searchQuery.trim())
+      if (results.length === 0) {
+        errorMessage = 'No se encontraron usuarios.'
+      }
+    } catch (error) {
+      errorMessage = getErrorMessage(error, 'Error al buscar usuarios')
+      results = []
+    } finally {
+      loading = false
+    }
+  }
+
+  const debouncedSearch = debounce((searchQuery: string) => {
+    void runSearch(searchQuery)
+  }, 300)
 
   function handleInput(event: Event) {
     query = (event.target as HTMLInputElement).value
-    clearTimeout(debounceTimer)
-
-    debounceTimer = setTimeout(async () => {
-      if (!query.trim()) {
-        results = []
-        errorMessage = ''
-        return
-      }
-
-      if (!$isAuthenticated) {
-        push('/login')
-        return
-      }
-
-      loading = true
-      errorMessage = ''
-      actionError = null
-
-      try {
-        results = await searchUsers(query.trim())
-        if (results.length === 0) {
-          errorMessage = 'No se encontraron usuarios.'
-        }
-      } catch (error) {
-        errorMessage =
-          error instanceof Error ? error.message : 'Error al buscar usuarios'
-        results = []
-      } finally {
-        loading = false
-      }
-    }, 300)
+    debouncedSearch(query)
   }
 
   async function handleFollow(userId: string) {
@@ -60,8 +64,7 @@
     try {
       await followUser(userId)
     } catch (error) {
-      actionError =
-        error instanceof Error ? error.message : 'No se pudo seguir al usuario'
+      actionError = getErrorMessage(error, 'No se pudo seguir al usuario')
     } finally {
       followState = { ...followState, [userId]: 'idle' }
     }
@@ -128,12 +131,7 @@
   }
 
   .status {
-    margin: 0.75rem 0 0;
-    color: var(--muted);
-  }
-
-  .status.error {
-    color: #b42318;
+    margin-top: 0.75rem;
   }
 
   .results {
