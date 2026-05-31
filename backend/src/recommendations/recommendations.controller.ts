@@ -1,15 +1,18 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
-import { RecommendationsService } from './recommendations.service';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CreateRecommendationDto } from './dto/create-recommendation.dto';
 import { UpdateRecommendationDto } from './dto/update-recommendation.dto';
+import { RecommendationsService } from './recommendations.service';
 
 @Controller('recommendations')
 export class RecommendationsController {
@@ -17,31 +20,44 @@ export class RecommendationsController {
     private readonly recommendationsService: RecommendationsService,
   ) {}
 
+  @Get('friends')
+  @UseGuards(JwtAuthGuard)
+  findFriendsRecommendations(@Request() req: { user: { id: string } }) {
+    return this.recommendationsService.findFriendsRecommendations(req.user.id);
+  }
+
   @Post()
-  create(@Body() createRecommendationDto: CreateRecommendationDto) {
-    return this.recommendationsService.create(createRecommendationDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.recommendationsService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.recommendationsService.findOne(+id);
+  @UseGuards(JwtAuthGuard)
+  create(
+    @Request() req: { user: { id: string } },
+    @Body() createRecommendationDto: CreateRecommendationDto,
+  ) {
+    return this.recommendationsService.create(
+      req.user.id,
+      createRecommendationDto,
+    );
   }
 
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
   update(
+    @Request() req: { user: { id: string } },
     @Param('id') id: string,
     @Body() updateRecommendationDto: UpdateRecommendationDto,
   ) {
-    return this.recommendationsService.update(+id, updateRecommendationDto);
+    return this.recommendationsService.update(
+      req.user.id,
+      id,
+      updateRecommendationDto,
+    );
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.recommendationsService.remove(+id);
+  @UseGuards(JwtAuthGuard)
+  remove(
+    @Request() req: { user: { id: string } },
+    @Param('id') id: string,
+  ) {
+    return this.recommendationsService.remove(req.user.id, id);
   }
 }

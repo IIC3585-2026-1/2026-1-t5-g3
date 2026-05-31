@@ -38,6 +38,15 @@ export class UserBook {
   })
   status!: UserBookStatus;
 
+  @Column({ type: 'timestamptz', nullable: true })
+  readAt?: Date | null;
+
+  @Column({ type: 'int', default: 0 })
+  readingProgress!: number;
+
+  @Column({ type: 'int', default: 0 })
+  currentPage!: number;
+
   @CreateDateColumn()
   createdAt!: Date;
 

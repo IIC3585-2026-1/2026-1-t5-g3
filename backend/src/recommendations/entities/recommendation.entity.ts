@@ -4,18 +4,14 @@ import {
   Entity,
   ManyToOne,
   PrimaryGeneratedColumn,
+  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 import { Book } from '../../books/entities/book.entity';
 import { User } from '../../users/entities/user.entity';
 
-export enum RecommendationStatus {
-  PENDING = 'PENDING',
-  ACCEPTED = 'ACCEPTED',
-  REJECTED = 'REJECTED',
-}
-
 @Entity('recommendations')
+@Unique(['fromUser', 'book'])
 export class Recommendation {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
@@ -31,31 +27,18 @@ export class Recommendation {
 
   @ManyToOne(
     () => User,
-    (user: User): Recommendation[] => user.sentRecommendations,
+    (user: User): Recommendation[] => user.recommendations,
     {
       onDelete: 'CASCADE',
     },
   )
   fromUser!: User;
 
-  @ManyToOne(
-    () => User,
-    (user: User): Recommendation[] => user.receivedRecommendations,
-    {
-      onDelete: 'CASCADE',
-    },
-  )
-  toUser!: User;
+  @Column({ type: 'int' })
+  rating!: number;
 
   @Column({ type: 'text', nullable: true })
   message?: string;
-
-  @Column({
-    type: 'enum',
-    enum: RecommendationStatus,
-    default: RecommendationStatus.PENDING,
-  })
-  status!: RecommendationStatus;
 
   @CreateDateColumn()
   createdAt!: Date;

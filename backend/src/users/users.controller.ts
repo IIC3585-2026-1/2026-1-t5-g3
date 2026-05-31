@@ -1,42 +1,75 @@
 import {
   Controller,
   Get,
-  Post,
-  Body,
-  Patch,
   Param,
-  Delete,
+  Query,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
+import { FollowsService } from '../follows/follows.service';
+import { RecommendationsService } from '../recommendations/recommendations.service';
+import { UserBooksService } from '../user-books/user-books.service';
 import { UsersService } from './users.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly userBooksService: UserBooksService,
+    private readonly followsService: FollowsService,
+    private readonly recommendationsService: RecommendationsService,
+  ) {}
 
-  @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  @Get('search')
+  @UseGuards(JwtAuthGuard)
+  searchUsers(@Query('q') query: string) {
+    return this.usersService.searchByName(query?.trim() ?? '');
   }
 
-  @Get()
-  findAll() {
-    return this.usersService.findAll();
+  @Get(':id/profile')
+  @UseGuards(OptionalJwtAuthGuard)
+  async getProfile(
+    @Request() req: { user?: { id: string } | null },
+    @Param('id') id: string,
+  ) {
+    const user = await this.usersService.findByIdOrFail(id);
+    const viewerId = req.user?.id ?? null;
+
+    const [
+      readThisYear,
+      recommendations,
+      friendsCount,
+      followingCount,
+      followersCount,
+      friends,
+      followStatus,
+    ] = await Promise.all([
+      this.userBooksService.getReadThisYearCount(id),
+      this.recommendationsService.findByUser(id),
+      this.followsService.getFriendsCount(id),
+      this.followsService.getFollowingCount(id),
+      this.followsService.getFollowersCount(id),
+      this.followsService.getFriends(id),
+      this.followsService.getFollowStatus(viewerId, id),
+    ]);
+
+    return {
+      id: user.id,
+      name: user.name,
+      readThisYear,
+      recommendations,
+      friendsCount,
+      followingCount,
+      followersCount,
+      friends,
+      followStatus,
+    };
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+  @Get(':id/friends')
+  getFriends(@Param('id') id: string) {
+    return this.followsService.getFriends(id);
   }
 }

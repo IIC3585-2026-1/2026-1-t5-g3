@@ -1,26 +1,42 @@
 import { Injectable } from '@nestjs/common';
-import { CreateBookDto } from './dto/create-book.dto';
-import { UpdateBookDto } from './dto/update-book.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Book } from './entities/book.entity';
+
+export interface UpsertBookData {
+  externalApiId: string;
+  title: string;
+  authors: string[];
+  thumbnailUrl?: string;
+  description?: string;
+  pageCount?: number;
+}
 
 @Injectable()
 export class BooksService {
-  create(createBookDto: CreateBookDto) {
-    return 'This action adds a new book';
-  }
+  constructor(
+    @InjectRepository(Book)
+    private readonly booksRepository: Repository<Book>,
+  ) {}
 
-  findAll() {
-    return `This action returns all books`;
-  }
+  async findOrCreate(data: UpsertBookData): Promise<Book> {
+    const existing = await this.booksRepository.findOne({
+      where: { externalApiId: data.externalApiId },
+    });
 
-  findOne(id: number) {
-    return `This action returns a #${id} book`;
-  }
+    if (existing) {
+      if (!existing.pageCount && data.pageCount) {
+        existing.pageCount = data.pageCount;
+        return this.booksRepository.save(existing);
+      }
+      return existing;
+    }
 
-  update(id: number, updateBookDto: UpdateBookDto) {
-    return `This action updates a #${id} book`;
-  }
+    const book = this.booksRepository.create({
+      ...data,
+      provider: 'google-books',
+    });
 
-  remove(id: number) {
-    return `This action removes a #${id} book`;
+    return this.booksRepository.save(book);
   }
 }

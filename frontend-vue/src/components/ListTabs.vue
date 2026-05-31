@@ -1,8 +1,15 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { activeTab, setActiveTab } from '../stores/books'
+import { isAuthenticated } from '../stores/auth'
 import { LIST_LABELS, type ListType } from '../types/book'
 
-const tabs: ListType[] = ['read', 'recommended', 'wantToRead']
+const guestTabs: ListType[] = ['wantToRead', 'reading', 'read']
+const authTabs: ListType[] = ['wantToRead', 'reading', 'read', 'dashboard']
+
+const tabs = computed(() =>
+  isAuthenticated.value ? authTabs : guestTabs,
+)
 </script>
 
 <template>

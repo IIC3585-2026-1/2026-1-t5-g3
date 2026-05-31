@@ -32,6 +32,9 @@ export class Book {
   @Column({ nullable: true })
   publishedDate?: string;
 
+  @Column({ type: 'int', nullable: true })
+  pageCount?: number;
+
   @Column({ default: 'google-books' })
   provider!: string;
 
