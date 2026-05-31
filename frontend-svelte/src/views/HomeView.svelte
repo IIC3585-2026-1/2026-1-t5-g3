@@ -3,7 +3,10 @@
   import ListTabs from '../components/ListTabs.svelte'
   import BookSearch from '../components/BookSearch.svelte'
   import BookList from '../components/BookList.svelte'
-  import { logout, user } from '../stores/auth'
+  import BookDashboard from '../components/BookDashboard.svelte'
+  import FriendRecommendationsCarousel from '../components/FriendRecommendationsCarousel.svelte'
+  import { activeTab } from '../stores/books'
+  import { logout, user, isAuthenticated } from '../stores/auth'
 
   function handleLogout() {
     logout()
@@ -20,7 +23,13 @@
 
     {#if $user}
       <div class="user-bar">
-        <span class="user-name">{$user.name}</span>
+        <button
+          type="button"
+          class="user-name"
+          onclick={() => push(`/users/${$user.id}`)}
+        >
+          {$user.name}
+        </button>
         <button type="button" class="btn-secondary" onclick={handleLogout}>
           Cerrar sesión
         </button>
@@ -40,6 +49,9 @@
   <div class="layout">
     <aside class="sidebar">
       <ListTabs />
+      {#if $isAuthenticated}
+        <FriendRecommendationsCarousel />
+      {/if}
     </aside>
 
     <section class="search-panel">
@@ -48,7 +60,11 @@
   </div>
 
   <section class="list-panel">
-    <BookList />
+    {#if $activeTab === 'dashboard'}
+      <BookDashboard />
+    {:else}
+      <BookList />
+    {/if}
   </section>
 </main>
 
@@ -71,14 +87,21 @@
   .user-name {
     color: var(--muted);
     font-size: 0.95rem;
+    padding: 0;
+    border: none;
+    background: none;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+
+  .user-name:hover {
+    color: var(--primary);
   }
 
   .btn-secondary,
   .btn-primary-link {
-    display: inline-block;
     padding: 0.4rem 0.75rem;
     border-radius: 6px;
-    text-decoration: none;
     font-size: 0.875rem;
     cursor: pointer;
     font-family: inherit;

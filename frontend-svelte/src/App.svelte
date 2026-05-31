@@ -1,15 +1,29 @@
 <script lang="ts">
   import { onMount } from 'svelte'
-  import Router from 'svelte-spa-router'
-  import { initAuth } from './stores/auth'
+  import { get } from 'svelte/store'
+  import Router, { push } from 'svelte-spa-router'
+  import { wrap } from 'svelte-spa-router/wrap'
+  import { initAuth, isAuthenticated } from './stores/auth'
   import HomeView from './views/HomeView.svelte'
   import LoginView from './views/LoginView.svelte'
   import RegisterView from './views/RegisterView.svelte'
+  import BookDetailView from './views/BookDetailView.svelte'
+  import ProfileView from './views/ProfileView.svelte'
+
+  function guestOnly() {
+    if (get(isAuthenticated)) {
+      push('/')
+      return false
+    }
+    return true
+  }
 
   const routes = {
     '/': HomeView,
-    '/login': LoginView,
-    '/register': RegisterView,
+    '/book/:id': BookDetailView,
+    '/users/:id': ProfileView,
+    '/login': wrap({ component: LoginView, conditions: [guestOnly] }),
+    '/register': wrap({ component: RegisterView, conditions: [guestOnly] }),
   }
 
   onMount(() => {

@@ -1,6 +1,8 @@
 import { derived, writable } from 'svelte/store'
 import type { User } from '../types/user'
 import * as authService from '../services/auth'
+import { clearBooks, loadUserBooks } from './books'
+import { clearSocial, loadFriendsRecommendations } from './social'
 
 const TOKEN_KEY = 'mybooks_token'
 const USER_KEY = 'mybooks_user'
@@ -25,6 +27,11 @@ async function validateSession(): Promise<void> {
   localStorage.setItem(USER_KEY, JSON.stringify(profile))
 }
 
+async function loadAuthenticatedData(): Promise<void> {
+  await loadUserBooks()
+  await loadFriendsRecommendations()
+}
+
 export async function initAuth(): Promise<void> {
   const storedToken = localStorage.getItem(TOKEN_KEY)
   const storedUser = localStorage.getItem(USER_KEY)
@@ -38,6 +45,7 @@ export async function initAuth(): Promise<void> {
 
   try {
     await validateSession()
+    await loadAuthenticatedData()
   } catch {
     logout()
   }
@@ -51,6 +59,7 @@ export async function login(email: string, password: string): Promise<void> {
     const response = await authService.login({ email, password })
     persistAuth(response.accessToken, response.user)
     await validateSession()
+    await loadAuthenticatedData()
   } catch (error) {
     authError.set(
       error instanceof Error ? error.message : 'Error al iniciar sesión',
@@ -73,6 +82,7 @@ export async function register(
     const response = await authService.register({ name, email, password })
     persistAuth(response.accessToken, response.user)
     await validateSession()
+    await loadAuthenticatedData()
   } catch (error) {
     authError.set(
       error instanceof Error ? error.message : 'Error al registrarse',
@@ -88,4 +98,6 @@ export function logout(): void {
   user.set(null)
   localStorage.removeItem(TOKEN_KEY)
   localStorage.removeItem(USER_KEY)
+  clearBooks()
+  clearSocial()
 }
