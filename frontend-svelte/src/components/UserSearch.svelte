@@ -6,6 +6,7 @@
   import type { UserSummary } from '../types/social'
   import { debounce } from '../utils/debounce'
   import { getErrorMessage } from '../utils/error'
+  import { showToast } from '../stores/toast'
 
   let query = $state('')
   let results = $state<UserSummary[]>([])
@@ -13,6 +14,7 @@
   let errorMessage = $state('')
   let actionError = $state<string | null>(null)
   let followState = $state<Record<string, 'idle' | 'loading'>>({})
+  let followedIds = $state<Set<string>>(new Set())
 
   async function runSearch(searchQuery: string) {
     if (!searchQuery.trim()) {
@@ -52,21 +54,29 @@
     debouncedSearch(query)
   }
 
-  async function handleFollow(userId: string) {
+  async function handleFollow(person: UserSummary) {
     if (!$isAuthenticated) {
       push('/login')
       return
     }
 
+    if (followedIds.has(person.id) || followState[person.id] === 'loading') {
+      return
+    }
+
     actionError = null
-    followState = { ...followState, [userId]: 'loading' }
+    followState = { ...followState, [person.id]: 'loading' }
 
     try {
-      await followUser(userId)
+      await followUser(person.id)
+      followedIds = new Set([...followedIds, person.id])
+      showToast(`Ahora sigues a ${person.name}`)
     } catch (error) {
-      actionError = getErrorMessage(error, 'No se pudo seguir al usuario')
+      const message = getErrorMessage(error, 'No se pudo seguir al usuario')
+      actionError = message
+      showToast(message, 'error')
     } finally {
-      followState = { ...followState, [userId]: 'idle' }
+      followState = { ...followState, [person.id]: 'idle' }
     }
   }
 </script>
@@ -103,10 +113,18 @@
           <button
             type="button"
             class="btn-follow"
-            disabled={followState[person.id] === 'loading'}
-            onclick={() => handleFollow(person.id)}
+            class:followed={followedIds.has(person.id)}
+            disabled={followState[person.id] === 'loading' || followedIds.has(person.id)}
+            onclick={() => handleFollow(person)}
           >
-            {followState[person.id] === 'loading' ? '...' : 'Seguir'}
+            {#if followState[person.id] === 'loading'}
+              <span class="spinner" aria-hidden="true"></span>
+              Siguiendo...
+            {:else if followedIds.has(person.id)}
+              Siguiendo
+            {:else}
+              Seguir
+            {/if}
           </button>
         </li>
       {/each}
@@ -169,6 +187,9 @@
   }
 
   .btn-follow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
     padding: 0.35rem 0.75rem;
     border: 1px solid var(--primary);
     border-radius: 4px;
@@ -179,8 +200,18 @@
     flex-shrink: 0;
   }
 
+  .btn-follow.followed {
+    border-color: var(--border);
+    background: var(--bg);
+    color: var(--muted);
+  }
+
   .btn-follow:disabled {
-    opacity: 0.6;
+    opacity: 0.85;
     cursor: not-allowed;
+  }
+
+  .btn-follow.followed:disabled {
+    opacity: 1;
   }
 </style>

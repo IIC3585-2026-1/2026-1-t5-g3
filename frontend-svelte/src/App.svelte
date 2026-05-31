@@ -9,6 +9,7 @@
   import RegisterView from './views/RegisterView.svelte'
   import BookDetailView from './views/BookDetailView.svelte'
   import ProfileView from './views/ProfileView.svelte'
+  import Toast from './components/Toast.svelte'
 
   function guestOnly() {
     if (get(isAuthenticated)) {
@@ -32,3 +33,4 @@
 </script>
 
 <Router {routes} />
+<Toast />

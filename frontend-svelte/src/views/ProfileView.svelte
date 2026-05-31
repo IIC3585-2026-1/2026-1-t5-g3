@@ -15,6 +15,7 @@
   import { isAuthenticated, user } from '../stores/auth'
   import { goBack } from '../utils/router'
   import { getErrorMessage } from '../utils/error'
+  import { showToast } from '../stores/toast'
 
   interface Props {
     params?: { id?: string }
@@ -30,6 +31,7 @@
   let selectedUserBookId = $state('')
   let rating = $state(3)
   let message = $state('')
+  let followLoading = $state(false)
 
   const isOwnProfile = $derived(
     $isAuthenticated && $user?.id === userId,
@@ -49,11 +51,30 @@
       push('/login')
       return
     }
-    await followUserAction(userId)
+
+    followLoading = true
+
+    try {
+      await followUserAction(userId)
+      showToast(`Ahora sigues a ${$profile?.name ?? 'este usuario'}`)
+    } catch (error) {
+      showToast(getErrorMessage(error, 'No se pudo seguir al usuario'), 'error')
+    } finally {
+      followLoading = false
+    }
   }
 
   async function handleUnfollow() {
-    await unfollowUserAction(userId)
+    followLoading = true
+
+    try {
+      await unfollowUserAction(userId)
+      showToast(`Dejaste de seguir a ${$profile?.name ?? 'este usuario'}`)
+    } catch (error) {
+      showToast(getErrorMessage(error, 'No se pudo dejar de seguir'), 'error')
+    } finally {
+      followLoading = false
+    }
   }
 
   async function handleRecommend() {
@@ -115,12 +136,32 @@
         <div class="follow-actions">
           {#if $isAuthenticated}
             {#if $profile.followStatus?.isFollowing}
-              <button type="button" class="btn-outline" onclick={handleUnfollow}>
-                Dejar de seguir
+              <button
+                type="button"
+                class="btn-outline"
+                disabled={followLoading}
+                onclick={handleUnfollow}
+              >
+                {#if followLoading}
+                  <span class="spinner" aria-hidden="true"></span>
+                  Procesando...
+                {:else}
+                  Dejar de seguir
+                {/if}
               </button>
             {:else}
-              <button type="button" class="btn-primary" onclick={handleFollow}>
-                Seguir
+              <button
+                type="button"
+                class="btn-primary"
+                disabled={followLoading}
+                onclick={handleFollow}
+              >
+                {#if followLoading}
+                  <span class="spinner" aria-hidden="true"></span>
+                  Siguiendo...
+                {:else}
+                  Seguir
+                {/if}
               </button>
             {/if}
           {:else}
@@ -361,6 +402,9 @@
   }
 
   .btn-outline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
     padding: 0.45rem 0.85rem;
     border-radius: 6px;
     font-size: 0.875rem;
@@ -368,5 +412,10 @@
     border: 1px solid var(--border);
     background: var(--surface);
     color: var(--text);
+  }
+
+  .btn-outline:disabled {
+    opacity: 0.85;
+    cursor: not-allowed;
   }
 </style>
