@@ -2,12 +2,12 @@
 
 ## Requisitos
 
-- Node.js 20.19+ o 22.12+ (recomendado: usar la versión de `.nvmrc`)
-- [pnpm](https://pnpm.io/)
+- Node.js 24 (ver `.nvmrc`: `nvm use`)
+- [pnpm](https://pnpm.io/) — **usar solo pnpm**, no npm
 
 ## Configuración
 
-La API key se lee desde el `.env` en la **raíz del repositorio** (un nivel arriba de esta carpeta).
+Las variables de entorno se leen desde el `.env` en la **raíz del repositorio** (un nivel arriba de esta carpeta).
 
 1. Copia el archivo de ejemplo en la raíz del proyecto:
 
@@ -15,17 +15,21 @@ La API key se lee desde el `.env` en la **raíz del repositorio** (un nivel arri
 cp ../.env.example ../.env
 ```
 
-2. Edita `../.env` y agrega tu key de Google Books:
+2. Edita `../.env` y agrega:
 
 ```
 VITE_GOOGLE_BOOKS_API_KEY=tu_api_key_aqui
+VITE_API_URL=http://localhost:3000
 ```
 
 Puedes obtener una key en [Google Cloud Console](https://console.cloud.google.com/) habilitando la **Books API**.
 
+El backend debe estar corriendo en `http://localhost:3000` para registro e inicio de sesión.
+
 ## Ejecutar
 
 ```bash
+nvm use
 pnpm install
 pnpm dev
 ```
