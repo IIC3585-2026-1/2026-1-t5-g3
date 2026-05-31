@@ -1,26 +1,36 @@
 <script lang="ts">
-  import ListTabs from './components/ListTabs.svelte';
-  import BookSearch from './components/BookSearch.svelte';
-  import BookList from './components/BookList.svelte';
+  import { onMount } from 'svelte'
+  import { get } from 'svelte/store'
+  import Router, { push } from 'svelte-spa-router'
+  import { wrap } from 'svelte-spa-router/wrap'
+  import { initAuth, isAuthenticated } from './stores/auth'
+  import HomeView from './views/HomeView.svelte'
+  import LoginView from './views/LoginView.svelte'
+  import RegisterView from './views/RegisterView.svelte'
+  import BookDetailView from './views/BookDetailView.svelte'
+  import ProfileView from './views/ProfileView.svelte'
+  import Toast from './components/Toast.svelte'
+
+  function guestOnly() {
+    if (get(isAuthenticated)) {
+      push('/')
+      return false
+    }
+    return true
+  }
+
+  const routes = {
+    '/': HomeView,
+    '/book/:id': BookDetailView,
+    '/users/:id': ProfileView,
+    '/login': wrap({ component: LoginView, conditions: [guestOnly] }),
+    '/register': wrap({ component: RegisterView, conditions: [guestOnly] }),
+  }
+
+  onMount(() => {
+    void initAuth()
+  })
 </script>
 
-<main class="app">
-  <header>
-    <h1>Mybooks</h1>
-    <p>Gestiona tus listas de libros</p>
-  </header>
-
-  <div class="layout">
-    <aside class="sidebar">
-      <ListTabs />
-    </aside>
-
-    <section class="search-panel">
-      <BookSearch />
-    </section>
-  </div>
-
-  <section class="list-panel">
-    <BookList />
-  </section>
-</main>
+<Router {routes} />
+<Toast />
