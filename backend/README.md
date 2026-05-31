@@ -111,3 +111,5 @@ El backend debería quedar corriendo en:
 ```txt
 http://localhost:3000
 ```
+
+También deberían quedar aplicadas las entidades que están creadas con TypeORM en la base de datos del contenedor.
