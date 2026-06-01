@@ -1,39 +1,208 @@
-import { derived, writable } from 'svelte/store';
-import type { Book, ListType } from '../types/book';
+import { derived, get, writable } from 'svelte/store'
+import type { Book, BookStatus, DashboardData, ListType } from '../types/book'
+import { listTypeToStatus, resolveUserBookStatus } from '../types/book'
+import { getErrorMessage } from '../utils/error'
+import { isAuthenticated } from './auth'
+import * as userBooksService from '../services/userBooks'
 
-const emptyLists: Record<ListType, Book[]> = {
+const emptyLists: Record<Exclude<ListType, 'dashboard'>, Book[]> = {
   read: [],
-  recommended: [],
   wantToRead: [],
-};
+  reading: [],
+}
 
-export const lists = writable<Record<ListType, Book[]>>(emptyLists);
-export const activeTab = writable<ListType>('wantToRead');
+export const lists = writable(emptyLists)
+export const activeTab = writable<ListType>('wantToRead')
+export const dashboard = writable<DashboardData | null>(null)
+export const booksLoading = writable(false)
+export const booksError = writable<string | null>(null)
 
 export const activeList = derived(
   [lists, activeTab],
-  ([$lists, $activeTab]) => $lists[$activeTab],
-);
+  ([$lists, $activeTab]) => {
+    if ($activeTab === 'dashboard') return []
+    return $lists[$activeTab]
+  },
+)
+
+export function findUserBookByExternalId(id: string): Book | undefined {
+  return resolveUserBookStatus(id, get(lists))?.book
+}
+
+export function getUserBookStatus(id: string): BookStatus | null {
+  return resolveUserBookStatus(id, get(lists))?.status ?? null
+}
 
 export function setActiveTab(tab: ListType): void {
-  activeTab.set(tab);
+  activeTab.set(tab)
 }
 
-export function addBook(list: ListType, book: Book): void {
-  lists.update((current) => {
-    const alreadyExists = current[list].some((item) => item.id === book.id);
-    if (alreadyExists) return current;
-
-    return {
-      ...current,
-      [list]: [...current[list], book],
-    };
-  });
+export function clearBooks(): void {
+  lists.set({ read: [], wantToRead: [], reading: [] })
+  dashboard.set(null)
+  booksError.set(null)
+  activeTab.set('wantToRead')
 }
 
-export function removeBook(list: ListType, bookId: string): void {
-  lists.update((current) => ({
-    ...current,
-    [list]: current[list].filter((book) => book.id !== bookId),
-  }));
+function populateLists(
+  items: Awaited<ReturnType<typeof userBooksService.fetchMyBooks>>,
+): Record<Exclude<ListType, 'dashboard'>, Book[]> {
+  const nextLists: Record<Exclude<ListType, 'dashboard'>, Book[]> = {
+    read: [],
+    wantToRead: [],
+    reading: [],
+  }
+
+  for (const item of items) {
+    const book = userBooksService.mapUserBook(item)
+    if (item.status === 'READ') {
+      nextLists.read.push(book)
+    } else if (item.status === 'WANT_TO_READ') {
+      nextLists.wantToRead.push(book)
+    } else if (item.status === 'READING') {
+      nextLists.reading.push(book)
+    }
+  }
+
+  return nextLists
+}
+
+function deriveDashboard(
+  nextLists: Record<Exclude<ListType, 'dashboard'>, Book[]>,
+): DashboardData {
+  const currentYear = String(new Date().getFullYear())
+  const readThisYearBooks = nextLists.read.filter(
+    (book) => book.readAt?.startsWith(currentYear),
+  )
+
+  return {
+    readThisYear: readThisYearBooks.length,
+    pending: nextLists.wantToRead.length,
+    reading: nextLists.reading.length,
+    readThisYearBooks,
+    pendingBooks: nextLists.wantToRead,
+    readingBooks: nextLists.reading,
+  }
+}
+
+export async function loadUserBooks(): Promise<void> {
+  if (!get(isAuthenticated)) return
+
+  booksLoading.set(true)
+  booksError.set(null)
+
+  try {
+    const items = await userBooksService.fetchMyBooks()
+    const nextLists = populateLists(items)
+    lists.set(nextLists)
+    dashboard.set(deriveDashboard(nextLists))
+  } catch (error) {
+    booksError.set(getErrorMessage(error, 'Error al cargar tus libros'))
+  } finally {
+    booksLoading.set(false)
+  }
+}
+
+export async function addBook(
+  list: Exclude<ListType, 'dashboard'>,
+  book: Book,
+): Promise<void> {
+  if (!get(isAuthenticated)) {
+    throw new Error('AUTH_REQUIRED')
+  }
+
+  const status = listTypeToStatus(list)
+  await userBooksService.addUserBook(book, status)
+  await loadUserBooks()
+}
+
+export async function startReading(book: Book): Promise<void> {
+  if (!book.userBookId) return
+
+  await userBooksService.updateUserBookStatus(book.userBookId, 'READING', 0)
+  await loadUserBooks()
+  activeTab.set('reading')
+}
+
+export async function markAsRead(book: Book): Promise<void> {
+  if (!book.userBookId) return
+
+  await userBooksService.updateUserBookStatus(book.userBookId, 'READ')
+  await loadUserBooks()
+  activeTab.set('read')
+}
+
+export async function updateReadingProgress(
+  book: Book,
+  currentPage: number,
+): Promise<void> {
+  if (!book.userBookId) return
+
+  const result = await userBooksService.updateUserBookCurrentPage(
+    book.userBookId,
+    currentPage,
+  )
+
+  await loadUserBooks()
+
+  if (result.status === 'READ') {
+    activeTab.set('read')
+  } else if (result.status === 'READING') {
+    activeTab.set('reading')
+  }
+}
+
+export async function moveToReading(book: Book): Promise<void> {
+  if (!book.userBookId) return
+
+  if (book.pageCount) {
+    const page =
+      book.currentPage && book.currentPage < book.pageCount
+        ? book.currentPage
+        : Math.max(0, book.pageCount - 1)
+    await userBooksService.updateUserBookCurrentPage(book.userBookId, page)
+  } else {
+    await userBooksService.updateUserBookStatus(book.userBookId, 'READING', 0)
+  }
+
+  await loadUserBooks()
+  activeTab.set('reading')
+}
+
+export async function moveToWantToRead(book: Book): Promise<void> {
+  if (!book.userBookId) return
+
+  await userBooksService.updateUserBookStatus(book.userBookId, 'WANT_TO_READ')
+  await loadUserBooks()
+  activeTab.set('wantToRead')
+}
+
+export async function removeBook(
+  list: Exclude<ListType, 'dashboard'>,
+  book: Book,
+): Promise<void> {
+  if (!get(isAuthenticated)) {
+    throw new Error('AUTH_REQUIRED')
+  }
+
+  if (!book.userBookId) {
+    throw new Error('No se pudo identificar el libro en tu biblioteca')
+  }
+
+  booksError.set(null)
+
+  try {
+    await userBooksService.removeUserBook(book.userBookId)
+    const currentLists = get(lists)
+    lists.set({
+      ...currentLists,
+      [list]: currentLists[list].filter(
+        (item) => item.userBookId !== book.userBookId,
+      ),
+    })
+    await loadUserBooks()
+  } catch (error) {
+    booksError.set(getErrorMessage(error, 'No se pudo quitar el libro'))
+    throw error
+  }
 }
