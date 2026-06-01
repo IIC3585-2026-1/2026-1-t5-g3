@@ -157,12 +157,6 @@
     box-sizing: border-box;
   }
 
-  .guest-notice {
-    margin: 0.75rem 0 0;
-    color: var(--muted);
-    font-size: 0.9rem;
-  }
-
   .status {
     margin-top: 0.75rem;
   }

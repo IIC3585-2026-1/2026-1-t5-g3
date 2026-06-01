@@ -98,9 +98,13 @@ function getStatusProgress(bookId: string): number | undefined {
 
     <p v-if="!isAuthenticated" class="guest-notice">
       Puedes buscar libros libremente. Para guardarlos en tus listas,
-      <RouterLink to="/login">inicia sesión</RouterLink>
+      <button type="button" class="inline-link" @click="router.push('/login')">
+        inicia sesión
+      </button>
       o
-      <RouterLink to="/register">regístrate</RouterLink>.
+      <button type="button" class="inline-link" @click="router.push('/register')">
+        regístrate
+      </button>.
     </p>
 
     <p v-if="loading" class="status">Buscando...</p>
@@ -135,21 +139,6 @@ input {
   border-radius: 6px;
   font-size: 1rem;
   box-sizing: border-box;
-}
-
-.guest-notice {
-  margin: 0.75rem 0 0;
-  color: var(--muted);
-  font-size: 0.9rem;
-}
-
-.guest-notice a {
-  color: var(--primary);
-  text-decoration: none;
-}
-
-.guest-notice a:hover {
-  text-decoration: underline;
 }
 
 .status {

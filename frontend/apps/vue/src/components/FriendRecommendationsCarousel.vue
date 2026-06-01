@@ -80,6 +80,7 @@ function stars(rating: number): string {
         <p class="slide-user">
           <RouterLink
             :to="`/users/${current.user.id}`"
+            class="inline-link"
             @click.stop
           >
             {{ current.user.name }}

@@ -97,23 +97,4 @@
   .user-name:hover {
     color: var(--primary);
   }
-
-  .btn-secondary,
-  .btn-primary-link {
-    padding: 0.4rem 0.75rem;
-    border-radius: 6px;
-    font-size: 0.875rem;
-    cursor: pointer;
-    font-family: inherit;
-  }
-
-  .btn-secondary {
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--text);
-  }
-
-  .btn-secondary:hover {
-    border-color: var(--primary);
-  }
 </style>
