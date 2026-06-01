@@ -6,16 +6,20 @@ import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
+const frontendRoot = path.resolve(__dirname, '../..')
+
 export default defineConfig({
-  envDir: path.resolve(__dirname, '../../..'),
+  envDir: path.resolve(frontendRoot, '..'),
   plugins: [vue(), vueDevTools()],
+  server: {
+    fs: {
+      allow: [frontendRoot],
+    },
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
-      '@mybooks/shared': path.resolve(
-        __dirname,
-        '../../packages/shared/src',
-      ),
+      '@mybooks/shared': path.resolve(frontendRoot, 'packages/shared/src'),
     },
   },
 })

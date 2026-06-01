@@ -1,4 +1,4 @@
-import '@mybooks/shared/styles/app.css'
+import '../../../packages/shared/src/styles/app.css'
 
 import { createApp } from 'vue'
 import App from './App.vue'

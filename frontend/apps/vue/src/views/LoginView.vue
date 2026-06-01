@@ -52,7 +52,7 @@ async function handleSubmit() {
 
       <p class="auth-footer">
         ¿No tienes cuenta?
-        <RouterLink to="/register">Regístrate</RouterLink>
+        <RouterLink to="/register" class="link-button">Regístrate</RouterLink>
       </p>
     </section>
   </main>

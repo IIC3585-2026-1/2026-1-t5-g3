@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import BookCard from './BookCard.vue'
+import GuestPrompt from './GuestPrompt.vue'
 import { dashboard, booksError, booksLoading, setActiveTab } from '../stores/books'
 import { isAuthenticated } from '../stores/auth'
 
@@ -12,10 +13,11 @@ const currentYear = new Date().getFullYear()
 
     <p v-if="booksLoading" class="empty">Cargando estadísticas...</p>
 
-    <div v-else-if="!isAuthenticated" class="guest-panel">
-      <p>Inicia sesión para ver tu progreso de lectura del año.</p>
-      <RouterLink to="/login" class="btn-primary-link">Iniciar sesión</RouterLink>
-    </div>
+    <GuestPrompt
+      v-else-if="!isAuthenticated"
+      message="Inicia sesión para ver tu progreso de lectura del año."
+      :show-register="false"
+    />
 
     <p v-else-if="booksError" class="error">{{ booksError }}</p>
 
@@ -137,28 +139,6 @@ const currentYear = new Date().getFullYear()
 .error {
   color: #b42318;
   margin: 0;
-}
-
-.guest-panel {
-  padding: 1rem;
-  border: 1px dashed var(--border);
-  border-radius: 8px;
-  background: var(--bg);
-}
-
-.guest-panel p {
-  margin: 0 0 1rem;
-  color: var(--muted);
-}
-
-.btn-primary-link {
-  display: inline-block;
-  padding: 0.5rem 0.85rem;
-  border-radius: 6px;
-  background: var(--primary);
-  color: white;
-  text-decoration: none;
-  font-size: 0.9rem;
 }
 
 .items {

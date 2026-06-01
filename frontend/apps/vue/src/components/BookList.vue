@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import BookCard from './BookCard.vue'
+import GuestPrompt from './GuestPrompt.vue'
 import {
   activeList,
   activeTab,
@@ -36,13 +37,10 @@ function handlePageChange(book: Book, currentPage: number) {
 
     <p v-if="booksLoading" class="empty">Cargando tus libros...</p>
 
-    <div v-else-if="!isAuthenticated" class="guest-panel">
-      <p>Inicia sesión para guardar libros, marcarlos como leídos y ver tu dashboard.</p>
-      <div class="guest-actions">
-        <RouterLink to="/login" class="btn-primary-link">Iniciar sesión</RouterLink>
-        <RouterLink to="/register" class="btn-outline-link">Registrarse</RouterLink>
-      </div>
-    </div>
+    <GuestPrompt
+      v-else-if="!isAuthenticated"
+      message="Inicia sesión para guardar libros, marcarlos como leídos y ver tu dashboard."
+    />
 
     <p v-else-if="booksError" class="error">{{ booksError }}</p>
 
@@ -115,44 +113,6 @@ function handlePageChange(book: Book, currentPage: number) {
 .error {
   color: #b42318;
   margin: 0;
-}
-
-.guest-panel {
-  padding: 1rem;
-  border: 1px dashed var(--border);
-  border-radius: 8px;
-  background: var(--bg);
-}
-
-.guest-panel p {
-  margin: 0 0 1rem;
-  color: var(--muted);
-}
-
-.guest-actions {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.btn-primary-link,
-.btn-outline-link {
-  display: inline-block;
-  padding: 0.5rem 0.85rem;
-  border-radius: 6px;
-  text-decoration: none;
-  font-size: 0.9rem;
-}
-
-.btn-primary-link {
-  background: var(--primary);
-  color: white;
-}
-
-.btn-outline-link {
-  border: 1px solid var(--border);
-  color: var(--text);
-  background: var(--surface);
 }
 
 .items {

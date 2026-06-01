@@ -156,3 +156,109 @@ header p {
 .auth-footer a:hover {
   text-decoration: underline;
 }
+
+/* Botones de auth / invitado (header, GuestPrompt, listas) */
+.btn-secondary,
+.btn-primary-link,
+.btn-outline-link {
+  display: inline-block;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  font-family: inherit;
+  text-decoration: none;
+}
+
+.btn-secondary {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.btn-secondary:hover {
+  border-color: var(--primary);
+}
+
+.btn-primary-link {
+  border: 1px solid var(--primary);
+  background: var(--primary);
+  color: white;
+}
+
+.btn-primary-link:hover {
+  opacity: 0.9;
+}
+
+.btn-outline-link {
+  border: 1px solid var(--primary);
+  background: var(--surface);
+  color: var(--primary);
+}
+
+.btn-outline-link:hover {
+  background: var(--primary);
+  color: white;
+}
+
+.auth-footer .link-button,
+a.link-button,
+.link-button {
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+  color: var(--primary);
+  cursor: pointer;
+  font: inherit;
+  text-decoration: underline;
+}
+
+.link-button:hover {
+  opacity: 0.85;
+}
+
+/* Enlaces inline en textos (BookSearch, carrusel, etc.) */
+.guest-notice a,
+.guest-notice .inline-link,
+.inline-link {
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0;
+  color: var(--primary);
+  cursor: pointer;
+  font: inherit;
+  font-size: inherit;
+  text-decoration: underline;
+}
+
+.guest-notice a:hover,
+.inline-link:hover {
+  opacity: 0.85;
+}
+
+.guest-notice {
+  margin: 0.75rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* Panel invitado bajo la lista (BookList / BookDashboard) */
+.guest-panel {
+  padding: 1rem;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+}
+
+.guest-panel p {
+  margin: 0 0 1rem;
+  color: var(--muted);
+}
+
+.guest-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}

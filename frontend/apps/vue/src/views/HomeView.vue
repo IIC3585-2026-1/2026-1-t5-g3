@@ -34,8 +34,12 @@ function handleLogout() {
       </div>
 
       <div v-else class="user-bar">
-        <RouterLink to="/login" class="btn-secondary">Iniciar sesión</RouterLink>
-        <RouterLink to="/register" class="btn-primary-link">Registrarse</RouterLink>
+        <button type="button" class="btn-secondary" @click="router.push('/login')">
+          Iniciar sesión
+        </button>
+        <button type="button" class="btn-primary-link" @click="router.push('/register')">
+          Registrarse
+        </button>
       </div>
     </header>
 
@@ -80,31 +84,5 @@ function handleLogout() {
 
 .user-name:hover {
   color: var(--primary);
-}
-
-.btn-secondary,
-.btn-primary-link {
-  display: inline-block;
-  padding: 0.4rem 0.75rem;
-  border-radius: 6px;
-  text-decoration: none;
-  font-size: 0.875rem;
-  cursor: pointer;
-}
-
-.btn-secondary {
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-}
-
-.btn-secondary:hover {
-  border-color: var(--primary);
-}
-
-.btn-primary-link {
-  border: 1px solid var(--primary);
-  background: var(--primary);
-  color: white;
 }
 </style>
