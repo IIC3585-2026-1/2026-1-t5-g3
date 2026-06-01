@@ -12,6 +12,8 @@ export default defineConfig({
   envDir: path.resolve(frontendRoot, '..'),
   plugins: [vue(), vueDevTools()],
   server: {
+    port: 5173,
+    strictPort: true,
     fs: {
       allow: [frontendRoot],
     },

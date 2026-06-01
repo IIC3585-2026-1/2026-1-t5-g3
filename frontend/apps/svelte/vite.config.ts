@@ -9,6 +9,7 @@ export default defineConfig({
   envDir: path.resolve(frontendRoot, '..'),
   server: {
     port: 5174,
+    strictPort: true,
     fs: {
       // CSS y código compartido viven fuera de apps/svelte
       allow: [frontendRoot],

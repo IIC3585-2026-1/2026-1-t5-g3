@@ -1,3 +1,5 @@
+/// <reference types="svelte" />
+/// <reference types="@sveltejs/vite-plugin-svelte/client" />
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
